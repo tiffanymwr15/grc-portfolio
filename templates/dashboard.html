@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRC Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ GRC Dashboard</h1>
+            <div class="last-updated">Last updated: <span id="last-updated">{{ data.generated_at[:19] }}</span></div>
+        </header>
+
+        <!-- System Health Status -->
+        <section class="health-bar">
+            <div class="health-item">
+                <span class="status-indicator {{ 'green' if data.health.status == 'OPERATIONAL' else 'red' }}"></span>
+                System: {{ data.health.status }}
+            </div>
+            <div class="health-item">Compliance Monitor: {{ data.health.monitors.compliance_monitor }}</div>
+            <div class="health-item">Risk Register: {{ data.health.monitors.risk_register }}</div>
+            <div class="health-item">Alert System: {{ data.health.monitors.alert_system }}</div>
+        </section>
+
+        <!-- Key Metrics Cards -->
+        <section class="metrics-grid">
+            <div class="metric-card critical">
+                <div class="metric-value">{{ data.compliance.findings.critical }}</div>
+                <div class="metric-label">Critical Findings</div>
+            </div>
+            <div class="metric-card high">
+                <div class="metric-value">{{ data.compliance.findings.high }}</div>
+                <div class="metric-label">High Findings</div>
+            </div>
+            <div class="metric-card medium">
+                <div class="metric-value">{{ data.compliance.findings.medium }}</div>
+                <div class="metric-label">Medium Findings</div>
+            </div>
+            <div class="metric-card info">
+                <div class="metric-value">{{ data.compliance.overall_score }}%</div>
+                <div class="metric-label">Compliance Score</div>
+            </div>
+        </section>
+
+        <!-- Risk Summary -->
+        <section class="panel">
+            <h2>🤖 AI Risk Summary</h2>
+            <div class="risk-stats">
+                <div class="stat-box">
+                    <div class="stat-number">{{ data.risk_summary.total }}</div>
+                    <div class="stat-label">Total Risks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number warning">{{ data.risk_summary.open }}</div>
+                    <div class="stat-label">Open Risks</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number critical">{{ data.risk_summary.critical }}</div>
+                    <div class="stat-label">Critical (Score ≥30)</div>
+                </div>
+            </div>
+            
+            {% if data.risk_summary.recent %}
+            <h3>Top Open Risks</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for risk in data.risk_summary.recent %}
+                    <tr class="severity-{{ 'critical' if risk.score >= 30 else 'high' if risk.score >= 22 else 'medium' }}">
+                        <td>{{ risk.risk_id }}</td>
+                        <td>{{ risk.title }}</td>
+                        <td>{{ risk.risk_category }}</td>
+                        <td>{{ risk.score }}</td>
+                        <td><span class="badge">{{ risk.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="no-data">No active risks. Run the AI risk register demo to populate.</p>
+            {% endif %}
+        </section>
+
+        <!-- Recent Alerts -->
+        <section class="panel">
+            <h2>🚨 Recent Alerts</h2>
+            {% if data.alerts %}
+            <ul class="alert-list">
+                {% for alert in data.alerts %}
+                <li class="alert-item severity-{{ alert.severity.lower() }}">
+                    <div class="alert-time">{{ alert.timestamp }}</div>
+                    <div class="alert-title">[{{ alert.severity }}] {{ alert.title }}</div>
+                    <div class="alert-source">{{ alert.source }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="no-data">No recent alerts. Use grc_alerter.py to send test alerts.</p>
+            {% endif %}
+        </section>
+
+        <!-- Compliance by Category -->
+        <section class="panel">
+            <h2>📊 Compliance by Category</h2>
+            <div class="category-grid">
+                {% for category, metrics in data.compliance.categories.items() %}
+                <div class="category-card">
+                    <div class="category-name">{{ category }}</div>
+                    <div class="category-score {{ 'good' if metrics.score >= 80 else 'warning' if metrics.score >= 60 else 'poor' }}">
+                        {{ metrics.score }}%
+                    </div>
+                    <div class="category-findings">{{ metrics.findings }} findings</div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <footer>
+            <p>GRC Dashboard | Auto-refreshes every 30 seconds | <a href="/api/status">API Status</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Auto-refresh data every 30 seconds
+        async function refreshData() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('last-updated').textContent = data.generated_at.slice(0, 19);
+                
+                // Could update all sections dynamically here
+                // For now, we just update the timestamp to show it's working
+                console.log('Dashboard refreshed:', data);
+            } catch (error) {
+                console.error('Refresh failed:', error);
+            }
+        }
+
+        // Refresh every 30 seconds
+        setInterval(refreshData, 30000);
+        
+        // Also refresh on page visibility change (tab becomes active)
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                refreshData();
+            }
+        });
+    </script>
+</body>
+</html>

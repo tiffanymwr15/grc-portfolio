@@ -1,0 +1,16 @@
+policy_name,owner,last_reviewed,status
+Acceptable Use Policy,John Smith,2026-02-15,Active
+Access Control Policy,Jane Doe,2025-01-10,Active
+Data Classification Policy,,2025-06-20,Active
+Incident Response Plan,Mike Johnson,2026-03-01,Active
+Password Policy,Jane Doe,2024-11-30,Active
+Encryption Standards,Sarah Lee,2025-09-15,Active
+Remote Work Policy,John Smith,2024-03-22,Active
+Change Management Policy,,2025-12-01,Draft
+Backup and Recovery Policy,Mike Johnson,2023-08-15,Active
+Vendor Management Policy,Sarah Lee,2026-01-20,Active
+Data Retention Policy,Jane Doe,2025-07-10,Active
+Physical Security Policy,,2024-06-01,Retired
+Network Security Policy,John Smith,2025-11-05,Active
+Business Continuity Plan,Mike Johnson,2025-04-18,Active
+Privacy Policy,Sarah Lee,2026-03-28,Active

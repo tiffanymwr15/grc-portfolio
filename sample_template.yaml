@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Sample infrastructure template with intentional GRC issues for validation testing"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+
+Resources:
+  # ── S3 Bucket — COMPLIANT (encrypted, not public, versioning, logging) ──
+  ComplianceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Environment}-compliance-data"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref ComplianceKey
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LogBucket
+        LogFilePrefix: compliance-data/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ── S3 Bucket — NON-COMPLIANT (no encryption, public, no versioning) ──
+  MarketingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Environment}-marketing-assets"
+      AccessControl: PublicRead
+      # Missing: BucketEncryption
+      # Missing: VersioningConfiguration
+      # Missing: PublicAccessBlockConfiguration
+      # Missing: LoggingConfiguration
+
+  # ── S3 Bucket — PARTIAL (encrypted but no versioning or logging) ──
+  TempBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Environment}-temp-uploads"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      # Missing: VersioningConfiguration
+      # Missing: LoggingConfiguration
+
+  # ── Log Bucket ──
+  LogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Environment}-access-logs"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # ── EC2 Security Group — NON-COMPLIANT (open SSH to world) ──
+  WebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web server security group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          CidrIp: 0.0.0.0/0
+
+  # ── EC2 Security Group — COMPLIANT (restricted access) ──
+  DatabaseSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Database security group - restricted
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/8
+
+  # ── RDS Instance — NON-COMPLIANT (not encrypted, publicly accessible) ──
+  DevDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      MasterUsername: admin
+      MasterUserPassword: password123
+      PubliclyAccessible: true
+      StorageEncrypted: false
+      # Missing: DeletionProtection
+
+  # ── RDS Instance — COMPLIANT ──
+  ProdDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.r5.large
+      Engine: postgres
+      MasterUsername: admin
+      MasterUserPassword: !Ref DBPasswordParam
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      DeletionProtection: true
+      BackupRetentionPeriod: 30
+
+  # ── KMS Key ──
+  ComplianceKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Encryption key for compliance data
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnableRootAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  # ── IAM Role — NON-COMPLIANT (wildcard permissions) ──
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: super-admin-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: FullAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "*"
+                Resource: "*"
+
+  # ── IAM Role — COMPLIANT (least privilege) ──
+  ReadOnlyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: readonly-audit-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+
+Outputs:
+  ComplianceBucketArn:
+    Value: !GetAtt ComplianceBucket.Arn
+  ProdDatabaseEndpoint:
+    Value: !GetAtt ProdDatabase.Endpoint.Address

@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Database files (generated at runtime)
+*.db
+
+# Runtime output files
+*.log
+*.jsonl
+evidence_log.txt
+flagged_policies.csv
+drift_baseline.json
+drift_report.json
+cloudtrail_analysis.json
+iam_audit_report.json
+s3_scan_report.json
+cfn_validation_report.json
+compliance_assessment.json
+compliance_assessment.md
+monitor_history.jsonl
+alert_history.jsonl
+*_export.csv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment variables
+.env

@@ -1,0 +1,74 @@
+{
+  "AC-2": {
+    "title": "Account Management",
+    "family": "Access Control",
+    "mappings": {
+      "CIS": ["1.1 - Maintain Inventory of Administrative Accounts", "1.2 - Ensure Only Authorized Users Have Admin Privileges"],
+      "ISO27001": ["A.9.2.1 - User Registration and De-registration", "A.9.2.2 - User Access Provisioning"],
+      "SOC2": ["CC6.1 - Logical and Physical Access Controls"]
+    }
+  },
+  "AC-6": {
+    "title": "Least Privilege",
+    "family": "Access Control",
+    "mappings": {
+      "CIS": ["4.3 - Ensure Non-Privileged Accounts Are Used", "5.1 - Establish Secure Configurations"],
+      "ISO27001": ["A.9.4.1 - Information Access Restriction"],
+      "SOC2": ["CC6.3 - Role-Based Access Controls"]
+    }
+  },
+  "AU-2": {
+    "title": "Event Logging",
+    "family": "Audit and Accountability",
+    "mappings": {
+      "CIS": ["6.2 - Activate Audit Logging", "6.3 - Enable Detailed Logging"],
+      "ISO27001": ["A.12.4.1 - Event Logging"],
+      "SOC2": ["CC7.2 - System Monitoring"]
+    }
+  },
+  "CM-6": {
+    "title": "Configuration Settings",
+    "family": "Configuration Management",
+    "mappings": {
+      "CIS": ["5.1 - Establish Secure Configurations", "5.2 - Maintain Secure Configurations"],
+      "ISO27001": ["A.12.1.1 - Documented Operating Procedures"],
+      "SOC2": ["CC8.1 - Change Management"]
+    }
+  },
+  "IA-5": {
+    "title": "Authenticator Management",
+    "family": "Identification and Authentication",
+    "mappings": {
+      "CIS": ["1.8 - Enforce Minimum Password Length", "1.9 - Enforce Password Complexity", "1.10 - Require MFA"],
+      "ISO27001": ["A.9.2.4 - Management of Secret Authentication Information"],
+      "SOC2": ["CC6.1 - Logical and Physical Access Controls"]
+    }
+  },
+  "IR-4": {
+    "title": "Incident Handling",
+    "family": "Incident Response",
+    "mappings": {
+      "CIS": ["17.1 - Designate Personnel to Manage Incidents", "17.4 - Establish and Maintain an Incident Response Process"],
+      "ISO27001": ["A.16.1.5 - Response to Information Security Incidents"],
+      "SOC2": ["CC7.3 - Detection and Monitoring", "CC7.4 - Incident Response"]
+    }
+  },
+  "SC-7": {
+    "title": "Boundary Protection",
+    "family": "System and Communications Protection",
+    "mappings": {
+      "CIS": ["9.2 - Ensure Only Approved Ports Are Open", "9.4 - Apply Host-Based Firewalls"],
+      "ISO27001": ["A.13.1.1 - Network Controls"],
+      "SOC2": ["CC6.6 - System Boundaries"]
+    }
+  },
+  "SC-28": {
+    "title": "Protection of Information at Rest",
+    "family": "System and Communications Protection",
+    "mappings": {
+      "CIS": ["3.11 - Encrypt Sensitive Data at Rest"],
+      "ISO27001": ["A.10.1.1 - Policy on the Use of Cryptographic Controls"],
+      "SOC2": ["CC6.7 - Data Protection"]
+    }
+  }
+}

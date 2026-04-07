@@ -1,0 +1,121 @@
+# GRC Validation Rules for CloudFormation Templates
+# Each rule defines what to check and what constitutes a violation.
+# Used by cfn_validator.py to scan templates for security issues.
+
+rules:
+  # ─── S3 Bucket Rules ────────────────────────────────────────────
+  - id: S3-001
+    name: S3 encryption required
+    resource_type: "AWS::S3::Bucket"
+    severity: HIGH
+    description: All S3 buckets must have server-side encryption enabled
+    check: property_exists
+    property_path: Properties.BucketEncryption
+    standard: "CIS 2.1.1 / NIST SC-28"
+
+  - id: S3-002
+    name: S3 public access blocked
+    resource_type: "AWS::S3::Bucket"
+    severity: CRITICAL
+    description: S3 buckets must block all public access
+    check: property_exists
+    property_path: Properties.PublicAccessBlockConfiguration
+    standard: "CIS 2.1.2 / NIST AC-3"
+
+  - id: S3-003
+    name: S3 versioning enabled
+    resource_type: "AWS::S3::Bucket"
+    severity: MEDIUM
+    description: S3 buckets should have versioning enabled for data protection
+    check: property_exists
+    property_path: Properties.VersioningConfiguration
+    standard: "NIST CP-9"
+
+  - id: S3-004
+    name: S3 access logging enabled
+    resource_type: "AWS::S3::Bucket"
+    severity: MEDIUM
+    description: S3 buckets should have access logging enabled
+    check: property_exists
+    property_path: Properties.LoggingConfiguration
+    standard: "NIST AU-2"
+
+  - id: S3-005
+    name: S3 no public ACL
+    resource_type: "AWS::S3::Bucket"
+    severity: CRITICAL
+    description: S3 buckets must not use PublicRead or PublicReadWrite ACLs
+    check: property_not_in
+    property_path: Properties.AccessControl
+    forbidden_values:
+      - PublicRead
+      - PublicReadWrite
+    standard: "CIS 2.1.2 / NIST AC-3"
+
+  # ─── Security Group Rules ──────────────────────────────────────
+  - id: SG-001
+    name: No SSH open to world
+    resource_type: "AWS::EC2::SecurityGroup"
+    severity: CRITICAL
+    description: Security groups must not allow SSH (port 22) from 0.0.0.0/0
+    check: no_open_port
+    port: 22
+    standard: "CIS 5.2 / NIST AC-4"
+
+  - id: SG-002
+    name: No RDP open to world
+    resource_type: "AWS::EC2::SecurityGroup"
+    severity: CRITICAL
+    description: Security groups must not allow RDP (port 3389) from 0.0.0.0/0
+    check: no_open_port
+    port: 3389
+    standard: "CIS 5.3 / NIST AC-4"
+
+  # ─── RDS Rules ─────────────────────────────────────────────────
+  - id: RDS-001
+    name: RDS encryption required
+    resource_type: "AWS::RDS::DBInstance"
+    severity: HIGH
+    description: RDS instances must have storage encryption enabled
+    check: property_equals
+    property_path: Properties.StorageEncrypted
+    expected_value: true
+    standard: "CIS 2.3.1 / NIST SC-28"
+
+  - id: RDS-002
+    name: RDS not publicly accessible
+    resource_type: "AWS::RDS::DBInstance"
+    severity: CRITICAL
+    description: RDS instances must not be publicly accessible
+    check: property_equals
+    property_path: Properties.PubliclyAccessible
+    expected_value: false
+    standard: "CIS 2.3.2 / NIST AC-3"
+
+  - id: RDS-003
+    name: RDS deletion protection
+    resource_type: "AWS::RDS::DBInstance"
+    severity: MEDIUM
+    description: RDS instances should have deletion protection enabled
+    check: property_equals
+    property_path: Properties.DeletionProtection
+    expected_value: true
+    standard: "NIST CP-9"
+
+  - id: RDS-004
+    name: RDS no hardcoded password
+    resource_type: "AWS::RDS::DBInstance"
+    severity: CRITICAL
+    description: RDS master password must not be a hardcoded string
+    check: property_not_plaintext
+    property_path: Properties.MasterUserPassword
+    standard: "NIST IA-5 / CIS 1.4"
+
+  # ─── IAM Rules ─────────────────────────────────────────────────
+  - id: IAM-001
+    name: No wildcard IAM actions
+    resource_type: "AWS::IAM::Role"
+    severity: CRITICAL
+    description: IAM policies must not grant Action * on Resource *
+    check: no_wildcard_policy
+    standard: "CIS 1.16 / NIST AC-6"
