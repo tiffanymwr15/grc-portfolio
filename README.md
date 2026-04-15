@@ -291,6 +291,16 @@ grc_framework/
 
 ---
 
+## Related Project: Runtime AI Usage Governance
+
+The tools above focus on infrastructure and policy-layer GRC. For **application-layer AI governance** — runtime monitoring of how people actually use LLMs, with risk scoring, policy enforcement, and compliance mapping — see:
+
+**[trust-agent](https://github.com/tiffanymwr15/trust-agent)** — Assesses AI prompts and outputs for PII and credential exposure, scores risk using weighted factors, maps violations to GDPR / SOC2 / ISO 27001 / NIST AI RMF, routes alerts by severity, and generates audit-ready reports. Ships with 4 Python tools, 8 Claude Code skills, and a one-command orchestrator.
+
+trust-agent is designed to feed directly into the portfolio tools above: its violations populate `ai_risk_register.py`, its alerts route through `grc_alerter.py`, its reports flow into `grc_dashboard.py`, and its framework mappings extend `control_mapper.py`.
+
+---
+
 ## Tech Stack
 
 - **Language:** Python 3.13
